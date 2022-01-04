@@ -1,0 +1,30 @@
+{
+  "name": "erik-konrad/matomo-url-shortener",
+  "type": "grav-plugin",
+  "description": "shortens url and appends the matomo userid",
+  "keywords": ["plugin"],
+  "homepage": "https://github.com/erik-konrad/grav-plugin-matomo-url-shortener",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Erik Konrad",
+      "email": "erik.konrad@zebra.de",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=7.1.3",
+    "matomo/matomo-php-tracker": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Grav\\Plugin\\MatomoURLShortener\\": "classes/"
+    },
+    "classmap":  ["matomo-url-shortener.php"]
+  },
+  "config": {
+    "platform": {
+      "php": "7.1.3"
+    }
+  }
+}
