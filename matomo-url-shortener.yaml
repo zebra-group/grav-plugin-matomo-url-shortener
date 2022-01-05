@@ -8,3 +8,4 @@ matomo:
   site_id: 1
   token: 61595b8bc2e12f8720b00e1912046402
   param_name: muid
+  exit_goal_id: 2

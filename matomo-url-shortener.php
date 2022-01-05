@@ -65,8 +65,8 @@ class MatomoURLShortenerPlugin extends Plugin
         if(!$_COOKIE[$this->config()['matomo']['param_name']]) {
             setcookie($this->config()['matomo']['param_name'], $this->generateUserId());
         }
+
         $matomoTrackManager->setUserId($_COOKIE[$this->config()['matomo']['param_name']]);
-        $matomoTrackManager->doTrackPageView($this->grav['page']->title());
 
         if($this->grav['uri']->Paths() && $this->grav['uri']->Paths()[0] === $this->config()['directus']['shortener_path']) {
             $directusUtility = new DirectusUtility(
@@ -82,10 +82,15 @@ class MatomoURLShortenerPlugin extends Plugin
             $redirectData = $directusUtility->get($requestURL);
 
             if($redirectData->getStatusCode() === 200) {
+                if($this->config()['matomo']['exit_goal_id']) {
+                    $matomoTrackManager->doTrackGoal($this->config()['matomo']['exit_goal_id']);
+                }
                 $redirectUri = $redirectData->toArray()['data']['redirect'] . '?' . $this->config()['matomo']['param_name'] . '=' . $matomoTrackManager->getUserId();
                 header('Location: '.$redirectUri);
                 exit();
             }
+        } else {
+            $matomoTrackManager->doTrackPageView($this->grav['page']->title());
         }
     }
 
