@@ -87,13 +87,16 @@ class MatomoURLShortenerPlugin extends Plugin
             );
 
             $requestURL = $directusUtility->generateRequestUrl($this->config()['directus']['url_table'], $this->grav['uri']->Paths()[1] );
-            $redirectData = $directusUtility->get($requestURL);
+            $responseData = $directusUtility->get($requestURL);
 
-            if($redirectData->getStatusCode() === 200) {
-                if($this->config()['matomo']['exit_goal_id']) {
-                    $matomoTrackManager->doTrackGoal($this->config()['matomo']['exit_goal_id']);
+            $requestData = $responseData->toArray()['data'];
+
+            if($responseData->getStatusCode() === 200) {
+
+                if(isset($requestData[$this->config()['directus']['url_goal_id_field']]) && $requestData[$this->config()['directus']['url_goal_id_field']] !== null) {
+                    $matomoTrackManager->doTrackGoal($requestData[$this->config()['directus']['url_goal_id_field']]);
                 }
-                $urlParams = parse_url($redirectData->toArray()['data']['redirect']);
+                $urlParams = parse_url($requestData['redirect']);
                 $trackingParam = $this->config()['matomo']['param_name'] . '=' . $matomoTrackManager->getUserId();
                 $redirectUri = $urlParams['scheme'] .
                     '://' .
