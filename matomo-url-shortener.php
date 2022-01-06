@@ -2,6 +2,7 @@
 namespace Grav\Plugin;
 
 use Composer\Autoload\ClassLoader;
+use Exception;
 use Grav\Common\Plugin;
 use Grav\Plugin\Directus\Utility\DirectusUtility;
 
@@ -58,6 +59,13 @@ class MatomoURLShortenerPlugin extends Plugin
         ]);
     }
 
+    /**
+     * @throws \Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface
+     */
     public function onPageInitialized()
     {
         $matomoTrackManager = new \MatomoTracker($this->config()['matomo']['site_id'], $this->config()['matomo']['url']);
@@ -85,7 +93,14 @@ class MatomoURLShortenerPlugin extends Plugin
                 if($this->config()['matomo']['exit_goal_id']) {
                     $matomoTrackManager->doTrackGoal($this->config()['matomo']['exit_goal_id']);
                 }
-                $redirectUri = $redirectData->toArray()['data']['redirect'] . '?' . $this->config()['matomo']['param_name'] . '=' . $matomoTrackManager->getUserId();
+                $urlParams = parse_url($redirectData->toArray()['data']['redirect']);
+                $trackingParam = $this->config()['matomo']['param_name'] . '=' . $matomoTrackManager->getUserId();
+                $redirectUri = $urlParams['scheme'] .
+                    '://' .
+                    $urlParams['scheme'] .
+                    $urlParams['host'] .
+                    '?' .
+                    ($urlParams['query'] ? $urlParams['query'] . '&' . $trackingParam : $trackingParam);
                 header('Location: '.$redirectUri);
                 exit();
             }
@@ -94,6 +109,10 @@ class MatomoURLShortenerPlugin extends Plugin
         }
     }
 
+    /**
+     * @return string
+     * @throws Exception
+     */
     private function generateUserId() {
         $date = new \DateTime();
         $timestamp = $date->getTimestamp();
