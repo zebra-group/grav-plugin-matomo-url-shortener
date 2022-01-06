@@ -97,7 +97,6 @@ class MatomoURLShortenerPlugin extends Plugin
                 $trackingParam = $this->config()['matomo']['param_name'] . '=' . $matomoTrackManager->getUserId();
                 $redirectUri = $urlParams['scheme'] .
                     '://' .
-                    $urlParams['scheme'] .
                     $urlParams['host'] .
                     '?' .
                     ($urlParams['query'] ? $urlParams['query'] . '&' . $trackingParam : $trackingParam);
