@@ -70,8 +70,11 @@ class MatomoURLShortenerPlugin extends Plugin
     {
         $matomoTrackManager = new \MatomoTracker($this->config()['matomo']['site_id'], $this->config()['matomo']['url']);
         $matomoTrackManager->setTokenAuth($this->config()['matomo']['token']);
-        if(!$_COOKIE[$this->config()['matomo']['cookie_name']]) {
-            setcookie($this->config()['matomo']['cookie_name'], $this->generateUserId());
+        
+        if(!isset($_COOKIE[$this->config()['matomo']['cookie_name']])) {
+            $userId = $this->generateUserId();
+            setcookie($this->config()['matomo']['cookie_name'], $userId);
+            $_COOKIE[$this->config()['matomo']['cookie_name']] = $userId;
         }
 
         $matomoTrackManager->setUserId($_COOKIE[$this->config()['matomo']['cookie_name']]);
