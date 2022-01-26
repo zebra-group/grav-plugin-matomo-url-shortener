@@ -70,14 +70,16 @@ class MatomoURLShortenerPlugin extends Plugin
     {
         $matomoTrackManager = new \MatomoTracker($this->config()['matomo']['site_id'], $this->config()['matomo']['url']);
         $matomoTrackManager->setTokenAuth($this->config()['matomo']['token']);
-        
+
         if(!isset($_COOKIE[$this->config()['matomo']['cookie_name']])) {
             $userId = $this->generateUserId();
             setcookie($this->config()['matomo']['cookie_name'], $userId);
             $_COOKIE[$this->config()['matomo']['cookie_name']] = $userId;
         }
 
+        $matomoTrackManager->setVisitorId($matomoTrackManager->getVisitorId());
         $matomoTrackManager->setUserId($_COOKIE[$this->config()['matomo']['cookie_name']]);
+
         if($this->grav['uri']->Paths() && $this->grav['uri']->Paths()[0] === $this->config()['directus']['shortener_path']) {
             $directusUtility = new DirectusUtility(
                 $this->config["plugins.directus"]['directus']['directusAPIUrl'],
