@@ -71,6 +71,10 @@ class MatomoURLShortenerPlugin extends Plugin
         $matomoTrackManager = new \MatomoTracker($this->config()['matomo']['site_id'], $this->config()['matomo']['url']);
         $matomoTrackManager->setTokenAuth($this->config()['matomo']['token']);
 
+        if($matomoTrackManager->getVisitorId()) {
+            $matomoTrackManager->setVisitorId($matomoTrackManager->getVisitorId());
+        }
+
         if(!isset($_COOKIE[$this->config()['matomo']['cookie_name']])) {
             $userId = $this->generateUserId();
             setcookie($this->config()['matomo']['cookie_name'], $userId, strtotime( '+30 days' ));
@@ -109,9 +113,9 @@ class MatomoURLShortenerPlugin extends Plugin
                 header('Location: '.$redirectUri);
                 exit();
             }
-        } else if(!isset($this->grav['uri']->query(null, true)['mbxqs'])) {
-            $matomoTrackManager->doTrackPageView($this->grav['page']->title());
-        }
+        } //else if(!isset($this->grav['uri']->query(null, true)['mbxqs'])) {
+         //   $matomoTrackManager->doTrackPageView($this->grav['page']->title());
+        //}
     }
 
     /**
