@@ -7,6 +7,6 @@ directus:
 matomo:
   url: http://matomo
   site_id: 1
-  token: 61595b8bc2e12f8720b00e1912046402
+  token: 4814b94a34ec00374c638dc0f61e626c
   cookie_name: muid
   param_name: muid
