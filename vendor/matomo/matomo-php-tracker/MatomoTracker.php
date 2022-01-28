@@ -640,7 +640,6 @@ class MatomoTracker
         $this->generateNewPageviewId();
 
         $url = $this->getUrlTrackPageView($documentTitle);
-
         return $this->sendRequest($url);
     }
 
@@ -1548,7 +1547,7 @@ didn't change any existing VisitorId value */
         $this->requestTimeout = $timeout;
         return $this;
     }
-	
+
 	/**
      * Sets the request method to POST, which is recommended when using setTokenAuth()
      * to prevent the token from being recorded in server logs. Avoid using redirects
@@ -1708,7 +1707,7 @@ didn't change any existing VisitorId value */
             ob_start();
             $response = @curl_exec($ch);
             ob_end_clean();
-            
+
             $header = '';
             $content = '';
 

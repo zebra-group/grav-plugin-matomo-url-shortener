@@ -77,6 +77,7 @@ class MatomoURLShortenerPlugin extends Plugin
             $_COOKIE[$this->config()['matomo']['cookie_name']] = $userId;
         }
 
+        $matomoTrackManager->setIp('');
         $matomoTrackManager->setUserId($_COOKIE[$this->config()['matomo']['cookie_name']]);
 
         if($this->grav['uri']->Paths() && $this->grav['uri']->Paths()[0] === $this->config()['directus']['shortener_path']) {
