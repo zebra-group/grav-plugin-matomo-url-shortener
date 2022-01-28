@@ -71,9 +71,7 @@ class MatomoURLShortenerPlugin extends Plugin
         $matomoTrackManager = new \MatomoTracker($this->config()['matomo']['site_id'], $this->config()['matomo']['url']);
         $matomoTrackManager->setTokenAuth($this->config()['matomo']['token']);
 
-        if($matomoTrackManager->getVisitorId()) {
-            $matomoTrackManager->setVisitorId($matomoTrackManager->getVisitorId());
-        }
+        $matomoTrackManager->setIp($matomoTrackManager->getIp());
 
         if(!isset($_COOKIE[$this->config()['matomo']['cookie_name']])) {
             $userId = $this->generateUserId();
