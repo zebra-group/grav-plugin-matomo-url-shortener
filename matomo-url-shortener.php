@@ -109,6 +109,8 @@ class MatomoURLShortenerPlugin extends Plugin
                 header('Location: '.$redirectUri);
                 exit();
             }
+        } else if(!isset($this->grav['uri']->query(null, true)['mbxqs'])) {
+            $matomoTrackManager->doTrackPageView($this->grav['page']->title());
         }
     }
 
