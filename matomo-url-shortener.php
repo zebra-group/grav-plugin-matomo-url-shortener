@@ -73,7 +73,9 @@ class MatomoURLShortenerPlugin extends Plugin
 
         if(!isset($_COOKIE[$this->config()['matomo']['cookie_name']])) {
             $userId = $this->generateUserId();
-            setcookie($this->config()['matomo']['cookie_name'], $userId);
+            setcookie($this->config()['matomo']['cookie_name'], $userId, [
+                'samesite' => 'Lax'
+            ]);
             $_COOKIE[$this->config()['matomo']['cookie_name']] = $userId;
         }
 
