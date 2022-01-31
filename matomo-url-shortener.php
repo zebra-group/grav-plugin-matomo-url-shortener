@@ -106,6 +106,9 @@ class MatomoURLShortenerPlugin extends Plugin
                     $urlParams['host'] .
                     '?' .
                     ($urlParams['query'] ? $urlParams['query'] . '&' . $trackingParam : $trackingParam);
+                if(!$matomoTrackManager->getUserId()) {
+                    $this->logLine(json_encode($matomoTrackManager, JSON_THROW_ON_ERROR));
+                }
                 header('Location: '.$redirectUri);
                 exit();
             }
@@ -121,5 +124,15 @@ class MatomoURLShortenerPlugin extends Plugin
         $timestamp = $date->getTimestamp();
         $stringToHash = (string)$timestamp . (string)random_int(1000, 9999);
         return md5($stringToHash);
+    }
+
+    private function logLine($text) {
+        $fileName = 'logs/' . (new \DateTime)->getTimestamp() . '-log.txt';
+        if(!file_exists($fileName)) {
+            touch($fileName);
+        }
+        $current = file_get_contents($fileName);
+        $current .= $text;
+        file_put_contents($fileName, $current);
     }
 }
