@@ -88,9 +88,8 @@ class MatomoURLShortenerPlugin extends Plugin
             $object = $flex->getObject($this->grav['uri']->Paths()[1], $this->config()['directus']['url_table']);
 
             if($object) {
-
-                if(isset($requestData[$this->config()['directus']['url_goal_id_field']]) && $requestData[$this->config()['directus']['url_goal_id_field']] !== null) {
-                  $matomoTrackManager->doTrackGoal($requestData[$this->config()['directus']['url_goal_id_field']]);
+                if(isset($requestData[$this->config()['directus']['url_goal_id_field']]) && $object[$this->config()['directus']['url_goal_id_field']] !== null) {
+                  $matomoTrackManager->doTrackGoal($object[$this->config()['directus']['url_goal_id_field']]);
                 }
                 $urlParams = parse_url($object['redirect']);
                 $trackingParam = $this->config()['matomo']['param_name'] . '=' . $matomoTrackManager->getUserId();
