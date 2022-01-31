@@ -5,6 +5,9 @@ use Composer\Autoload\ClassLoader;
 use Exception;
 use Grav\Common\Plugin;
 use Grav\Plugin\Directus\Utility\DirectusUtility;
+use Grav\Common\Grav;
+use Grav\Framework\Flex\Interfaces\FlexInterface;
+use Grav\Framework\Flex\Interfaces\FlexObjectInterface;
 
 /**
  * Class MatomoURLShortenerPlugin
@@ -80,26 +83,16 @@ class MatomoURLShortenerPlugin extends Plugin
         $matomoTrackManager->setUserId($_COOKIE[$this->config()['matomo']['cookie_name']]);
 
         if($this->grav['uri']->Paths() && $this->grav['uri']->Paths()[0] === $this->config()['directus']['shortener_path']) {
-            $directusUtility = new DirectusUtility(
-                $this->config["plugins.directus"]['directus']['directusAPIUrl'],
-                $this->grav,
-                $this->config["plugins.directus"]['directus']['email'],
-                $this->config["plugins.directus"]['directus']['password'],
-                $this->config["plugins.directus"]['directus']['token'],
-                isset($this->config["plugins.directus"]['disableCors']) && $this->config["plugins.directus"]['disableCors']
-            );
 
-            $requestURL = $directusUtility->generateRequestUrl($this->config()['directus']['url_table'], $this->grav['uri']->Paths()[1] );
-            $responseData = $directusUtility->get($requestURL);
+            $flex = Grav::instance()->get('flex');
+            $object = $flex->getObject($this->grav['uri']->Paths()[1], $this->config()['directus']['url_table']);
 
-            $requestData = $responseData->toArray()['data'];
-
-            if($responseData->getStatusCode() === 200) {
+            if($object) {
 
                 if(isset($requestData[$this->config()['directus']['url_goal_id_field']]) && $requestData[$this->config()['directus']['url_goal_id_field']] !== null) {
-                    $matomoTrackManager->doTrackGoal($requestData[$this->config()['directus']['url_goal_id_field']]);
+                  $matomoTrackManager->doTrackGoal($requestData[$this->config()['directus']['url_goal_id_field']]);
                 }
-                $urlParams = parse_url($requestData['redirect']);
+                $urlParams = parse_url($object['redirect']);
                 $trackingParam = $this->config()['matomo']['param_name'] . '=' . $matomoTrackManager->getUserId();
                 $redirectUri = $urlParams['scheme'] .
                     '://' .
