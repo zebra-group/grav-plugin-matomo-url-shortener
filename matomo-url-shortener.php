@@ -71,16 +71,18 @@ class MatomoURLShortenerPlugin extends Plugin
      */
     public function onPageInitialized()
     {
+
         $matomoTrackManager = new \MatomoTracker($this->config()['matomo']['site_id'], $this->config()['matomo']['url']);
         $matomoTrackManager->setTokenAuth($this->config()['matomo']['token']);
 
         if(!isset($_COOKIE[$this->config()['matomo']['cookie_name']])) {
             $userId = $this->generateUserId();
-            setcookie($this->config()['matomo']['cookie_name'], $userId, strtotime( '+30 days' ), '/');
             $_COOKIE[$this->config()['matomo']['cookie_name']] = $userId;
+        } else {
+            $matomoTrackManager->setUserId($_COOKIE[$this->config()['matomo']['cookie_name']]);
         }
 
-        $matomoTrackManager->setUserId($_COOKIE[$this->config()['matomo']['cookie_name']]);
+        $this->grav['twig']->twig_vars['ome_token'] = $_COOKIE[$this->config()['matomo']['cookie_name']];
 
         if($this->grav['uri']->Paths() && $this->grav['uri']->Paths()[0] === $this->config()['directus']['shortener_path']) {
 
@@ -89,7 +91,7 @@ class MatomoURLShortenerPlugin extends Plugin
 
             if($object) {
                 if(isset($object[$this->config()['directus']['url_goal_id_field']]) && $object[$this->config()['directus']['url_goal_id_field']] !== null) {
-                  $matomoTrackManager->doTrackGoal($object[$this->config()['directus']['url_goal_id_field']]);
+                    $matomoTrackManager->doTrackGoal($object[$this->config()['directus']['url_goal_id_field']]);
                 }
                 $urlParams = parse_url($object['redirect']);
                 $trackingParam = $this->config()['matomo']['param_name'] . '=' . $matomoTrackManager->getUserId();
