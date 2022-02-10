@@ -3,6 +3,7 @@ namespace Grav\Plugin;
 
 use Composer\Autoload\ClassLoader;
 use Exception;
+use DateTime;
 use Grav\Common\Plugin;
 use Grav\Plugin\Directus\Utility\DirectusUtility;
 use Grav\Common\Grav;
@@ -75,37 +76,46 @@ class MatomoURLShortenerPlugin extends Plugin
         $matomoTrackManager = new \MatomoTracker($this->config()['matomo']['site_id'], $this->config()['matomo']['url']);
         $matomoTrackManager->setTokenAuth($this->config()['matomo']['token']);
 
-        if(!isset($_COOKIE[$this->config()['matomo']['cookie_name']])) {
-            $userId = $this->generateUserId();
-            $_COOKIE[$this->config()['matomo']['cookie_name']] = $userId;
-        } else {
-            $matomoTrackManager->setUserId($_COOKIE[$this->config()['matomo']['cookie_name']]);
-        }
-
-        $this->grav['twig']->twig_vars['ome_token'] = $_COOKIE[$this->config()['matomo']['cookie_name']];
+        $hashedVisitorId = sha1($matomoTrackManager->getVisitorId());
 
         if($this->grav['uri']->Paths() && $this->grav['uri']->Paths()[0] === $this->config()['directus']['shortener_path']) {
 
             $flex = Grav::instance()->get('flex');
             $object = $flex->getObject($this->grav['uri']->Paths()[1], $this->config()['directus']['url_table']);
-
             if($object) {
                 if(isset($object[$this->config()['directus']['url_goal_id_field']]) && $object[$this->config()['directus']['url_goal_id_field']] !== null) {
                     $matomoTrackManager->doTrackGoal($object[$this->config()['directus']['url_goal_id_field']]);
+                    $this->createFile($matomoTrackManager, $hashedVisitorId);
                 }
+
                 $urlParams = parse_url($object['redirect']);
-                $trackingParam = $this->config()['matomo']['param_name'] . '=' . $matomoTrackManager->getUserId();
+                $trackingParam = $this->config()['matomo']['param_name'] . '=' . $matomoTrackManager->getVisitorId();
                 $redirectUri = $urlParams['scheme'] .
                     '://' .
                     $urlParams['host'] .
                     '?' .
                     ($urlParams['query'] ? $urlParams['query'] . '&' . $trackingParam : $trackingParam);
-                if(!$matomoTrackManager->getUserId()) {
+
+                if(!$matomoTrackManager->getVisitorId()) {
                     $this->logLine(json_encode($matomoTrackManager, JSON_THROW_ON_ERROR));
                 }
                 header('Location: '.$redirectUri);
                 exit();
             }
+        }
+        elseif($this->grav['uri']->Paths() && $this->grav['uri']->Paths()[0] === $this->config()['matomo']['import_path']){
+            $file = 'tmp/'. sha1($this->grav['uri']->Paths()[1]).'.txt';
+
+            if(file_exists($file)){
+                $requestUrl = $this->doTrackAction();
+
+
+                echo ('doTrackAction: '.$requestUrl);
+            }
+            else{
+                echo ('file not exists: '.$matomoTrackManager->getVisitorId());
+            }
+            exit();
         }
     }
 
@@ -118,6 +128,23 @@ class MatomoURLShortenerPlugin extends Plugin
         $timestamp = $date->getTimestamp();
         $stringToHash = (string)$timestamp . (string)random_int(1000, 9999);
         return md5($stringToHash);
+    }
+
+    private function createFile($matomoTrackManager, $hashedVisitorId){
+        $file = 'tmp/'.$hashedVisitorId.'.txt';
+        $newTime = date("Y-m-d H:i:s",strtotime(date("Y-m-d H:i:s")." +20 minutes"));
+        $url = $matomoTrackManager->getUrlTrackGoal($this->config()['matomo']['goal_id_response']).'&token_auth='.$this->config()['matomo']['token'].'&cdt='.$newTime;
+
+        file_put_contents($file, "Url: ". $url ." | VisitorId:".$matomoTrackManager->getVisitorId());
+    }
+
+    private function doTrackAction($matomoTrackManager, $file){
+        $content = file_get_contents($file);
+        $params = explode(" | ", $content);
+        $requestUrl = explode(": ", $params[0])[1];
+        $matomoTrackManager->doTrackAction($requestUrl, 'link');
+
+        return $requestUrl;
     }
 
     private function logLine($text) {
